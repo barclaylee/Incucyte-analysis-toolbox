@@ -1,6 +1,8 @@
 function Extracted_data = parse_csv(file)
 % Takes path to statistic csv exported from Imaris and converts to MATLAB table
 % format
+% Input:
+%   file: filename of csv file (including path)
 
 delimiter = ',';
 

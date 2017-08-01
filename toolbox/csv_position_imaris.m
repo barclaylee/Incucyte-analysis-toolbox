@@ -10,39 +10,6 @@ time_scale = 2; % time interval (in min)
 
 [filename, path, ~] = uigetfile('.csv'); %select Position file
 Extracted_data = parse_csv([path filename]);
-
-delimiter = ',';
-% formatSpec = '%f%f%f%s%s%s%f%s%s%[^\n\r]'; % Important: the 6th column (TrackID) is imported as a STRING not a number
-% Read file as raw text
-raw_data = fileread([path filename]);
-raw_data_split = regexp(raw_data, '\n', 'split');
-
-%detect start line
-startRow = 2 + find(~cellfun('isempty', regexp(raw_data_split,'====')));
-disp(sprintf('Detected row %d as start of data...', startRow));
-
-%extract header line
-header_line = regexp(raw_data_split{startRow-1}, delimiter, 'split');
-header_line = replace(header_line, {' ', '[', ']'}, '');
-header_line = header_line(cellfun('isempty', regexp(header_line,'[\n\r]')));
-
-%construct formatSpec for textscan()
-formatSpec = '';
-for i=1:length(header_line)
-    if regexp(header_line{i}, 'Position|Time')
-        formatSpec = [formatSpec '%f'];
-    else
-        formatSpec = [formatSpec '%s'];
-    end
-end
-formatSpec = [formatSpec '%[^\n\r]'];
-
-fileID = fopen([path filename],'r');
-dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'EmptyValue' ,NaN,'HeaderLines' ,startRow-1, 'ReturnOnError', false);
-fclose(fileID);
-
-Extracted_data = table(dataArray{1:length(header_line)}, 'VariableNames', header_line);
-
 %% Separate the main table into individual tables per TruelyUniqueName
 
 % [TUN, TUN_idx_last, TUN_idx] = unique(Extracted_data(:,13),'stable'); % Use this line if you've generated unique TrackIDs above
@@ -69,3 +36,6 @@ save([path filename(1:str_header) 'tracks_for_MSDanalyzer.mat'], 'tracks');
 disp(['Wrote: ' filename(1:str_header) 'tracks_for_MSDanalyzer.mat']);
 
 clearvars -except tracks path filename str_header
+
+%% Calculate constrained/directed/random transient migratory periods
+
