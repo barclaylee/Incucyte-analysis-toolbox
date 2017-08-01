@@ -1,5 +1,5 @@
-%% To modify the layout the measurements made by Imaris
-% This script takes the Imaris export csv file where all the measurement
+%% To modify the layout of the measurements made by Imaris
+% This script takes the Imaris 'Position' export csv file where all the measurement
 % are listed time point after time point and re-shuffle them into collated
 % columns with one track per column
 clear all;
@@ -9,6 +9,8 @@ close all;
 time_scale = 2; % time interval (in min)
 
 [filename, path, ~] = uigetfile('.csv'); %select Position file
+Extracted_data = parse_csv([path filename]);
+
 delimiter = ',';
 % formatSpec = '%f%f%f%s%s%s%f%s%s%[^\n\r]'; % Important: the 6th column (TrackID) is imported as a STRING not a number
 % Read file as raw text
@@ -67,67 +69,3 @@ save([path filename(1:str_header) 'tracks_for_MSDanalyzer.mat'], 'tracks');
 disp(['Wrote: ' filename(1:str_header) 'tracks_for_MSDanalyzer.mat']);
 
 clearvars -except tracks path filename str_header
-%% Analyze tracks with MSD analyzer
-N_DIM = 2;
-
-ma = msdanalyzer(N_DIM, 'µm', 'min');
-ma = ma.addAll(tracks);
-
-% Plot trajectories
-[hps, ha] = ma.plotTracks;
-ma.labelPlotTracks(ha);
-
-%Compute and plot MSD
-
-ma = ma.computeMSD;
-figure
-hmsd = ma.plotMeanMSD(gca, true);
-
-%Calculate power law of MSD fit
-ma = ma.fitLogLogMSD(0.25);
-ma.loglogfit
-
-r2fits = ma.loglogfit.r2fit;
-alphas = ma.loglogfit.alpha;
-R2LIMIT = 0.8;
-
-%Separate tracks by alpha value and r2 value
-constrained = find(alphas < 0.75 & r2fits > R2LIMIT);
-brownian = find(alphas >= 0.75 & alphas < 1.5 & r2fits > R2LIMIT);
-directed = find(alphas >= 1.5 & r2fits > R2LIMIT);
-
-total_sig = size(constrained,1) + size(brownian,1) + size(directed,1);
-
-tracks_constrained = ma.tracks(constrained);
-tracks_brownian = ma.tracks(brownian);
-tracks_directed = ma.tracks(directed);
-
-ma_const = msdanalyzer(N_DIM, 'µm', 'min');
-ma_const = ma_const.addAll(tracks_constrained);
-
-ma_brown = msdanalyzer(N_DIM, 'µm', 'min');
-ma_brown = ma_brown.addAll(tracks_brownian);
-
-ma_dir = msdanalyzer(N_DIM, 'µm', 'min');
-ma_dir = ma_dir.addAll(tracks_directed);
-
-subplot 131, [hps,ha] = ma_const.plotTracks; title(sprintf('constrained: n=%d',size(constrained,1)));
-subplot 132, [hps,ha] = ma_brown.plotTracks; title(sprintf('brownian: n=%d',size(brownian,1)));
-subplot 133, [hps,ha] = ma_dir.plotTracks; title(sprintf('directed: n=%d',size(directed,1)));
-
-ma_const = ma_const.computeMSD;
-ma_brown = ma_brown.computeMSD;
-ma_dir = ma_dir.computeMSD;
-
-figure;
-subplot 131, ma_const.plotMeanMSD(gca, (size(constrained,1) > 0)); title(sprintf('constrained: n=%d',size(constrained,1)));
-subplot 132, ma_brown.plotMeanMSD(gca, (size(brownian,1) > 0)); title(sprintf('brownian: n=%d',size(brownian,1)));
-subplot 133, ma_dir.plotMeanMSD(gca, (size(directed,1) > 0)); title(sprintf('directed: n=%d',size(directed,1)));
-
-figure;
-subplot 131, ma_const.plotMSD(gca); title(sprintf('constrained: n=%d',size(constrained,1)));
-subplot 132, ma_brown.plotMSD(gca); title(sprintf('brownian: n=%d',size(brownian,1)));
-subplot 133, ma_dir.plotMSD(gca); title(sprintf('directed: n=%d',size(directed,1)));
-
-save([path filename(1:str_header) 'MSD_analysis.mat']);
-disp(['Wrote: ' filename(1:str_header) 'MSD_analysis.mat']);

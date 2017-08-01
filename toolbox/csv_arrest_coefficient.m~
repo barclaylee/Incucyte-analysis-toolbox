@@ -21,7 +21,7 @@ indicator_progress = 0;
 arrest_coeffs = [];
 
 for jj = 1:height(TUN);
-    speeds=Extracted_data{unique_idx{jj},'Speed'};
+    speeds=table2array(Extracted_data(unique_idx{jj},1));
     num_arrest = length(find(speeds < threshold));
     tmp_coeff = num_arrest / length(speeds);
     arrest_coeffs = [arrest_coeffs; tmp_coeff];
