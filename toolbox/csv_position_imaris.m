@@ -2,6 +2,7 @@
 % This script takes the Imaris 'Position' export csv file where all the measurement
 % are listed time point after time point and re-shuffle them into collated
 % columns with one track per column
+% Performs TMAP analysis on exported tracks
 clear all;
 close all; 
 
@@ -35,7 +36,8 @@ str_header = min(find(filename == '_'));
 save([path filename(1:str_header) 'tracks_for_MSDanalyzer.mat'], 'tracks');
 disp(['Wrote: ' filename(1:str_header) 'tracks_for_MSDanalyzer.mat']);
 
-clearvars -except tracks path filename str_header
+clearvars -except tracks path filename str_header time_scale
 
 %% Calculate constrained/directed/random transient migratory periods
 
+tmap(tracks, time_scale, [path 'track_distribution.csv']);

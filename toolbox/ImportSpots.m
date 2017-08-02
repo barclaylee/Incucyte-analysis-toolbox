@@ -4,6 +4,9 @@
 % connect to Imaris interface
 x_len = 1581.12; %length in microns
 y_len = 1185.84;
+time_scale = 2; % time interval (in min)
+
+%% 
 
 cd('C:\Program Files\Bitplane\Imaris x64 8.4.1\XT\matlab');
 %cd('/Applications/Imaris 8.4.1.app/Contents/SharedSupport/XT/matlab');
@@ -29,7 +32,7 @@ for z = 0:Z_size - 1
     vDataSet.SetDataSliceBytes(fliplr(tmp),0,0,z);
 end
 
-vDataSet.SetTimePointsDelta(120); % Set time interval
+vDataSet.SetTimePointsDelta(time_scale * 60); % Set time interval
 vDataSet.SetChannelColorRGBA(0, 16777215); %Set color to gray
 
 vImarisApplication.SetDataSet(vDataSet);
@@ -47,7 +50,7 @@ vDataSet.SetExtendMaxZ(1);
 vSpots = vImarisApplication.GetFactory.CreateSpots;
 vSpots.SetColorRGBA(65535);
 
-PositionXYZ_adjusted = PositionXYZ * 1.22;
+PositionXYZ_adjusted = PositionXYZ * 1.22; %adjust since spots are calculated on raw pixel locs
 PositionXYZ_adjusted(:,2) = y_len - PositionXYZ_adjusted(:,2);
 vSpots.Set(PositionXYZ_adjusted, IndicesT, Radii);
 aSurpassScene.AddChild(vSpots, -1);

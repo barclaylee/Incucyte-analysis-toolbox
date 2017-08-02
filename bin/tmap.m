@@ -1,4 +1,4 @@
-function total_dist = tmap(tracks, label)
+function total_dist = tmap(tracks, time_scale, filename)
 % TMAP Detection
 % Classify transient periods in tracks as directed, constrained, or
 % brownian motion.
@@ -6,7 +6,8 @@ function total_dist = tmap(tracks, label)
 % Input:
 %     tracks: (N x 1 cell) of tracks
 %       Each track is Tx3 array with columns in order: Time, X, and Y
-%     label: (optional) string to label exported csv filename with
+%     time_scale: interval between frames (in min)
+%     filename (str): name of exported results csv (can include path)
 %
 % Output:
 %     total_dist: (N x 3) array showing fraction of time each cell spends in 
@@ -22,15 +23,14 @@ function total_dist = tmap(tracks, label)
 close all
 
 %% Define parameters
-W = 25; %size of sliding window (11 is good for 5 min imaging interval)
+N_DIM = 2; %number of dimensions (WARNING: code not tested for 3D)
 
-N_DIM = 2;
-dir_thres = 10; %number of consecutive points required for directed motion (4 is good for 5 min interval)
+% automatically scale W and dir_thres based on time_scale (target W=25 and
+% dir_thres=10 for 2 min intervals based on Khorshidi)
+W = floor(50/time_scale/2)*2+1; %odd parity integer
+dir_thres = floor(20/time_scale); %any integer
+
 %% Calculate distribution
-if nargin < 2
-    label = '';
-end
-
 % Scan through all tracks and obtain migration distribution for each
 num_tracks = size(tracks,1);
 total_dist = [];
@@ -50,7 +50,8 @@ for current_track_idx = 1:num_tracks
     end
 end
 
-csvwrite(sprintf('track_distribution%s.csv',label),total_dist);
+disp(['Wrote: ' filename]);
+csvwrite(filename,total_dist);
 
 %plot histogram of fraction of time each track spent in directed motion
 figure; hist(total_dist(:,2)); xlabel('Fraction of time'); ylabel('# of tracks'); title('Directed motion');

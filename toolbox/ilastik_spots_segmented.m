@@ -24,7 +24,7 @@ for i = 1:size(filenames,2)
     %filter by area
     props = regionprops(img_thres,'Centroid','Area');
     areas = [props.Area];
-    to_keep = areas >= 5;
+    to_keep = areas >= 5; % can change this area threshold to whatever works best
     
     centroids = round(cat(1, props.Centroid));
     centroids_filt = centroids(to_keep,:);
