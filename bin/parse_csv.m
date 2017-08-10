@@ -15,13 +15,13 @@ disp(sprintf('Detected row %d as start of data...', startRow));
 
 %extract header line
 header_line = regexp(raw_data_split{startRow-1}, delimiter, 'split');
-header_line = replace(header_line, {' ', '[', ']'}, '');
+header_line = replace(header_line, {' ', '[', ']', '^'}, '');
 header_line = header_line(cellfun('isempty', regexp(header_line,'[\n\r]')));
 
 %construct formatSpec for textscan()
 formatSpec = '';
 for i=1:length(header_line)
-    if regexp(header_line{i}, 'Speed|Position|Time')
+    if regexp(header_line{i}, 'Speed|Position|Time|Displacement')
         formatSpec = [formatSpec '%f'];
     else
         formatSpec = [formatSpec '%s'];

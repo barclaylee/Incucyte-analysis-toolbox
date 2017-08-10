@@ -130,6 +130,7 @@ figure; hist(total_dist(:,3)); xlabel('Fraction of time'); ylabel('# of tracks')
         %Brownian: everything else
         
         track_labels = ones(1,size(current_track,1));
+       
         track_labels(alpha_thres) = 2;
         track_labels(M_thres) = 3;
         
@@ -206,12 +207,12 @@ figure; hist(total_dist(:,3)); xlabel('Fraction of time'); ylabel('# of tracks')
             
             %create legend
             h = zeros(3, 1);
-            h(1) = plot(NaN,NaN,'b-', 'LineWidth', 2);
-            h(2) = plot(NaN,NaN,'r-', 'LineWidth', 2);
-            h(3) = plot(NaN,NaN,'y-', 'LineWidth', 2);
-            legend(h, 'brownian', 'directed', 'constrained');
+            h(1) = plot(NaN,NaN,'b-', 'LineWidth', 5);
+            h(2) = plot(NaN,NaN,'r-', 'LineWidth', 5);
+            h(3) = plot(NaN,NaN,'y-', 'LineWidth', 5);
+            legend(h, 'random', 'directed', 'constrained');
             xlabel('X'); ylabel('Y');
-            title(sprintf('Track # %d: # Directed = %d, # Constrained = %d, # Brownian = %d',current_track_idx,num_dir,num_con,num_bro));
+            title(sprintf('Track # %d: # Directed = %d, # Constrained = %d, # Random = %d',current_track_idx,num_dir,num_con,num_bro));
             set(gca,'FontSize',12);
             hold off
             
