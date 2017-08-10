@@ -1,9 +1,17 @@
-%save incucyte exported tiffs to tiff series
-%each series ~ 7 day
+% This script converts raw images exported from Incucyte into tiff stacks
+% User can set which days to save as well as the size of each tiff stack
+% Tiff stacks are saved to the current open folder
+
+%% parameters
 clear all
 close all
 
-directory = 'RAW';
+days_to_save = 1:7:22; % list of days to save tiffs for, other days are skipped
+n_frames = 720; %number of frames to save per tiff file
+
+%% calculate target time indices
+
+directory = uigetdir('', 'Directory with raw phase-contrast images');
 
 % Create list of file names
 files = dir(directory);
@@ -11,7 +19,6 @@ filenames = {files.name};
 filenames = filenames(3:end);
 
 % Get weekly time points
-% day 7, day 14, day 21 media changes (avoid analysis)
 
 % Extract zero time point:
 start_filename = filenames{1};
@@ -21,12 +28,11 @@ zero_month = str2num(zero_day{1}{2});
 zero_time = zero_day{1}{4};
 zero_day = str2num(zero_day{1}{3});
 
-% Find weekly time points
-% day 1, day 8, day 15, day 22
+% Find time points of interest
 num_days = max(max(calendar(zero_year, zero_month)));
 time_idx = [];
 time_day = [];
-for day = 1:7:22
+for day = days_to_save
     %calculate target date
     target_day = zero_day+day;
     target_month = zero_month;
@@ -47,16 +53,18 @@ for day = 1:7:22
     
 end
 
-time_idx_end = time_idx + 719;
+time_idx_end = time_idx + n_frames - 1;
 
 %sanity check: view images
 for i=1:length(time_idx)
-    img = imread(['RAW/' filenames{time_idx(i)}]);
+    img = imread([directory '/' filenames{time_idx(i)}]);
     imshow(rgb2gray(img));
+    title('Is this day you want? Press any key to continue...');
     pause;
 end
 close all
 
+%% export tiff series
 for j=1:length(time_idx)
     output_file = sprintf('%02dday.tif',time_day(j));
     bt = Tiff(output_file, 'w');
@@ -78,7 +86,7 @@ for j=1:length(time_idx)
         tags.Compression         = Tiff.Compression.None;
         tags.PlanarConfiguration = Tiff.PlanarConfiguration.Chunky;
         tags.Software            = 'MATLAB';
-        tags.XResolution         = 0.8183;
+        tags.XResolution         = 0.8183; % set resolution of tiff in distance/pixel
         tags.YResolution         = 0.8183;
         tags.ResolutionUnit      = 1;
         setTag(bt, tags)
