@@ -3,13 +3,20 @@
 % are listed time point after time point and re-shuffle them into collated
 % columns with one track per column
 % Performs TMAP analysis on exported tracks
-clear all;
-close all; 
+% 
+% Generates 2 files:
+%     tracks_for_MSDanalyzer.mat: calculated tracks stored in a cell format
+%     track_distribution.csv: (N x 3) array showing fraction of time each cell spends in 
+%         different category of motion
+%         Columns order: [%random, %directed, %constrained]
+    
+% clear all;
+% close all; 
 
 %% Loading and various parameters
 time_scale = 2; % time interval (in min)
 
-[filename, path, ~] = uigetfile('.csv'); %select Position file
+% [filename, path, ~] = uigetfile('.csv'); %select Position file
 Extracted_data = parse_csv([path filename]);
 %% Separate the main table into individual tables per TruelyUniqueName
 
