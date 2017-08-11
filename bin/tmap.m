@@ -1,7 +1,7 @@
 function total_dist = tmap(tracks, time_scale, filename)
 % TMAP Detection
 % Classify transient periods in tracks as directed, constrained, or
-% brownian motion.
+% random motion.
 %
 % Input:
 %     tracks: (N x 1 cell) of tracks
@@ -12,7 +12,7 @@ function total_dist = tmap(tracks, time_scale, filename)
 % Output:
 %     total_dist: (N x 3) array showing fraction of time each cell spends in 
 %         different category of motion
-%         Columns order: [%brownian, %directed, %constrained]
+%         Columns order: [%random, %directed, %constrained]
 %
 % Save distribution to csv file
 %
@@ -42,11 +42,11 @@ for current_track_idx = 1:num_tracks
     track_length = sum(dist);
     
     if ~isempty(dist)
-        frac_bro = dist(1)/track_length;
+        frac_rand = dist(1)/track_length;
         frac_dir = dist(2)/track_length;
         frac_con = dist(3)/track_length;
         
-        total_dist = [total_dist; frac_bro frac_dir frac_con];
+        total_dist = [total_dist; frac_rand frac_dir frac_con];
     end
 end
 
@@ -67,7 +67,7 @@ figure; hist(total_dist(:,3)); xlabel('Fraction of time'); ylabel('# of tracks')
         %
         %         Output:
         %             dist: Distribution of track based on migratory behavior
-        %                 1 = brownian
+        %                 1 = random
         %                 2 = directed
         %                 3 = constrained
         
@@ -84,8 +84,8 @@ figure; hist(total_dist(:,3)); xlabel('Fraction of time'); ylabel('# of tracks')
             return
         end
         
-        % Correct distance scale (if necessary)
-        current_track = [current_track(:,1) round(current_track(:,2:3)*1.22)];
+%         % Correct distance scale (if necessary)
+%         current_track = [current_track(:,1) current_track(:,2:3)*1.22];
         
         % For each track, split into consecutive parts of size W
         for i = 1:size(current_track,1)-W+1
@@ -127,7 +127,7 @@ figure; hist(total_dist(:,3)); xlabel('Fraction of time'); ylabel('# of tracks')
         %Constrained: M<4.2
         M_thres = current_track_M_smooth < 4.2;
         
-        %Brownian: everything else
+        %random: everything else
         
         track_labels = ones(1,size(current_track,1));
        
@@ -151,8 +151,8 @@ figure; hist(total_dist(:,3)); xlabel('Fraction of time'); ylabel('# of tracks')
         % plot individual track with color labels
         if show_graphs
             %count number of segments in each category
-            bwbro = bwconncomp(track_labels == 1);
-            num_bro = bwbro.NumObjects;
+            bwrand = bwconncomp(track_labels == 1);
+            num_rand = bwrand.NumObjects;
             
             bwdir = bwconncomp(track_labels == 2);
             num_dir = bwdir.NumObjects;
@@ -163,9 +163,9 @@ figure; hist(total_dist(:,3)); xlabel('Fraction of time'); ylabel('# of tracks')
             %Plot labeled track
             figure;
             hold on
-            %brownian
-            for i = 1:bwbro.NumObjects
-                part_idx = bwbro.PixelIdxList{i};
+            %random
+            for i = 1:bwrand.NumObjects
+                part_idx = bwrand.PixelIdxList{i};
                 
                 %connect line segments together
                 if min(part_idx) > 1
@@ -212,7 +212,7 @@ figure; hist(total_dist(:,3)); xlabel('Fraction of time'); ylabel('# of tracks')
             h(3) = plot(NaN,NaN,'y-', 'LineWidth', 5);
             legend(h, 'random', 'directed', 'constrained');
             xlabel('X'); ylabel('Y');
-            title(sprintf('Track # %d: # Directed = %d, # Constrained = %d, # Random = %d',current_track_idx,num_dir,num_con,num_bro));
+            title(sprintf('Track # %d: # Directed = %d, # Constrained = %d, # Random = %d',current_track_idx,num_dir,num_con,num_rand));
             set(gca,'FontSize',12);
             hold off
             
