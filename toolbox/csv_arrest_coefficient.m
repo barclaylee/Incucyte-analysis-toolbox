@@ -1,5 +1,4 @@
-%% To modify the layout the measurements made by Imaris
-% This script takes the Imaris 'Speed' export csv file where all the measurement
+% This script takes the Imaris 'Speed' statistic exported csv file where all the measurement
 % are listed time point after time point and calculates the arrest
 % coefficient based on user-set threshold
 clear all
@@ -7,6 +6,7 @@ close all
 
 %% Loading and various parameters
 
+% Make sure speed is um/s in csv file!!!
 threshold = 2 / 60; % um/s threshold for arrest coefficient
 [filename, path, ~] = uigetfile('.csv'); %Select Speed file
 
