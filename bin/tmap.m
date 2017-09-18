@@ -10,9 +10,9 @@ function total_dist = tmap(tracks, time_scale, filename)
 %     filename (str): name of exported results csv (can include path)
 %
 % Output:
-%     total_dist: (N x 3) array showing fraction of time each cell spends in 
+%     total_dist: (N x 4) array showing fraction of time each cell spends in 
 %         different category of motion
-%         Columns order: [%random, %directed, %constrained]
+%         Columns order: [%random, %directed, %constrained, num_switch]
 %
 % Save distribution to csv file
 %
@@ -38,7 +38,7 @@ total_dist = [];
 for current_track_idx = 1:num_tracks
     disp(sprintf('Analyzing track %d/%d...',current_track_idx,num_tracks));
     
-    dist = analyze_track(current_track_idx, 0);
+    [dist, num_switch] = analyze_track(current_track_idx, 0);
     track_length = sum(dist);
     
     if ~isempty(dist)
@@ -46,7 +46,7 @@ for current_track_idx = 1:num_tracks
         frac_dir = dist(2)/track_length;
         frac_con = dist(3)/track_length;
         
-        total_dist = [total_dist; frac_rand frac_dir frac_con];
+        total_dist = [total_dist; frac_rand frac_dir frac_con num_switch];
     end
 end
 
@@ -59,7 +59,7 @@ figure; hist(total_dist(:,2)); xlabel('Fraction of time'); ylabel('# of tracks')
 %plot histogram of fraction of time each track spent in constrained motion
 figure; hist(total_dist(:,3)); xlabel('Fraction of time'); ylabel('# of tracks'); title('Constrained motion');
 
-    function dist = analyze_track(current_track_idx, show_graphs)
+    function [dist, num_switch] = analyze_track(current_track_idx, show_graphs)
         %         Analyze a single track for its migratory distribution
         %         Input:
         %             current_track_idx: Track index to be analyzed
@@ -70,8 +70,9 @@ figure; hist(total_dist(:,3)); xlabel('Fraction of time'); ylabel('# of tracks')
         %                 1 = random
         %                 2 = directed
         %                 3 = constrained
-        
-        
+        %             
+        %             num_switch: number of switches between migration
+        %             modes for the track
         
         ma = msdanalyzer(N_DIM, 'µm', 'min');
         
@@ -144,6 +145,10 @@ figure; hist(total_dist(:,3)); xlabel('Fraction of time'); ylabel('# of tracks')
                 track_labels(bwdir.PixelIdxList{i}) = 1;
             end
         end
+        
+        %Compute number of switches between modes
+        track_labels_edge = conv(track_labels,[-1 1],'valid');
+        num_switch = sum(track_labels_edge ~= 0);
         
         %Determine dominant track behavior
         dist = [sum(track_labels == 1) sum(track_labels == 2) sum(track_labels == 3)];

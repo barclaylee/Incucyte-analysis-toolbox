@@ -16,7 +16,7 @@
 %% Loading and various parameters
 time_scale = 2; % time interval (in min)
 
-% [filename, path, ~] = uigetfile('.csv'); %select Position file
+[filename, path, ~] = uigetfile('.csv'); %select Position file
 Extracted_data = parse_csv([path filename]);
 %% Separate the main table into individual tables per TruelyUniqueName
 
