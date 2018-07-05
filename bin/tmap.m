@@ -82,6 +82,7 @@ figure; hist(total_dist(:,3)); xlabel('Fraction of time'); ylabel('# of tracks')
         % ignore trajectories shorter than window length
         if size(current_track,1) < W
             dist = [];
+            num_switch = NaN;
             return
         end
         

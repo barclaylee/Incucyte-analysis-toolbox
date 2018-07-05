@@ -7,7 +7,7 @@ close all
 %% Loading and various parameters
 
 % Make sure speed is um/s in csv file!!!
-threshold = 2 / 60; % um/s threshold for arrest coefficient
+threshold = 2; % um/min threshold for arrest coefficient
 [filename, path, ~] = uigetfile('.csv'); %Select Speed file
 
 Extracted_data = parse_csv([path filename]);
