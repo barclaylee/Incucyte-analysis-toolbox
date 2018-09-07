@@ -1,15 +1,14 @@
 %Script for processing segmented images exported from ilastik into spots
 %.mat files for import into Imaris
-%Segmented images are individual tiff binary images with cell values
-%set to 1 and background values set to 2
-%Method: threshold == 1, find connected components, find centroids
+%Method: threshold, find connected components, find centroids
 
 %% set parameters
 clear all
 close all
 
 spot_radii = 2.5; %Radius of spots to show in Imaris (display purposes, not important)
-area_threshold = 5; % lower threshold on region size - helps reduce false detections, change this to area threshold to whatever works best
+area_threshold = 0; % lower threshold on region size - helps reduce false detections, change this to area threshold to whatever works best
+spot_value = 2; %pixel value assigned to cells by ilastik
 %% process images
 path = uigetdir('','Select folder with segmented images'); %Select segmented images
     %folder needs to contain only images (delete/move extra files)
@@ -28,7 +27,7 @@ for i = 1:size(filenames,2)
     img = imread(filenames{i});
     
     %threshold: find simple segmentation regions
-    img_thres = img == 1;
+    img_thres = img == spot_value; 
     
     %filter by area
     props = regionprops(img_thres,'Centroid','Area');
@@ -39,10 +38,10 @@ for i = 1:size(filenames,2)
     centroids_filt = centroids(to_keep,:);
     numSpots = size(centroids_filt,1);
     
-%     %save detected spots to file for validation 
+%     %save detected spots to file for validation
 %     ind = sub2ind(size(img), centroids(:,2), centroids(:,1));
 %     spots = zeros(size(img));
-%     spots(ind) = 1;
+%     spots(round(ind)) = 1;
 %     imwrite(spots, 'spots.png');
     
     tmpPositionXYZ = [centroids_filt ones(numSpots,1)];

@@ -15,15 +15,16 @@
 clear all
 close all
 
+clearvars -except vImarisLib aServer vObjectId vImarisApplication
 %% set parameters
-x_len = 1581.12; %length in microns of image
-y_len = 1185.84; %height in microns of image
+x_len = 1693.02; %length in microns of image
+y_len = 1264.90; %height in microns of image
 time_scale = 2; % time interval (in min)
 
 [filename, path, ~] = uigetfile('.mat');
 load([path filename]);
 %% connect to Imaris interface
-cd('C:\Program Files\Bitplane\Imaris x64 8.4.1\XT\matlab'); %set this to directory containing ImarisLib.jar
+cd('C:\Program Files\Bitplane\Imaris x64 9.2.1\XT\matlab'); %set this to directory containing ImarisLib.jar
 %cd('/Applications/Imaris 8.4.1.app/Contents/SharedSupport/XT/matlab');
 javaaddpath ImarisLib.jar;
 vImarisLib = ImarisLib;
@@ -32,6 +33,7 @@ vObjectId = aServer.GetObjectID(0);
 vImarisApplication = vImarisLib.GetApplication(vObjectId);
 
 aSurpassScene = vImarisApplication.GetSurpassScene;
+vDataSet = vImarisApplication.GetDataSet;
 
 %Swap Z and T
 X_size = vImarisApplication.GetDataSet.GetSizeX;
@@ -39,15 +41,17 @@ Y_size = vImarisApplication.GetDataSet.GetSizeY;
 Z_size = vImarisApplication.GetDataSet.GetSizeZ;
 T_size = vImarisApplication.GetDataSet.GetSizeT;
 
-vDataSet = vImarisApplication.GetFactory.CreateDataSet;
-vDataSet.Create(Imaris.tType.eTypeUInt8,X_size,Y_size,1,1,Z_size);
+% vDataSet = vImarisApplication.GetFactory.CreateDataSet;
+% vDataSet.Create(Imaris.tType.eTypeUInt8,X_size,Y_size,1,1,T_size);
 
-for z = 0:Z_size - 1
-    tmp =  vImarisApplication.GetDataSet.GetDataSliceBytes(z,0,0);
-    vDataSet.SetDataSliceBytes(fliplr(tmp),0,0,z);
-end
+% for z = 0:Z_size - 1
+%     tmp =  vImarisApplication.GetDataSet.GetDataSliceBytes(z,0,0);
+%     vDataSet.SetDataSliceBytes(fliplr(tmp),0,0,z);
+% end
 
 vDataSet.SetTimePointsDelta(time_scale * 60); % Set time interval
+%might need to click through Edit>Image Properties>Geometry>All Equidistant before this
+%updates
 vDataSet.SetChannelColorRGBA(0, 16777215); %Set color of tiff series to gray
 
 vImarisApplication.SetDataSet(vDataSet);
@@ -68,7 +72,7 @@ vSpots.SetColorRGBA(65535);
 %locations
 scale_fix = x_len/X_size;
 PositionXYZ_adjusted = PositionXYZ * scale_fix;
-PositionXYZ_adjusted(:,2) = y_len - PositionXYZ_adjusted(:,2); %flip spots over Y - different coordinate axis in Imaris...
+% PositionXYZ_adjusted(:,2) = y_len - PositionXYZ_adjusted(:,2); %flip spots over Y - different coordinate axis in Imaris...
 vSpots.Set(PositionXYZ_adjusted, IndicesT, Radii);
 aSurpassScene.AddChild(vSpots, -1);
 
